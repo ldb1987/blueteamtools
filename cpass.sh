@@ -5,7 +5,7 @@ numc='1234567890'
 specc='!@#$%^&*()'
 
 
-users=($(grep -vE "nologin|$(whoami)" /etc/passwd | grep -oE "^[^:]{1,}"))
+users=($(grep -vE "nologin|$(id -un)|root" /etc/passwd | grep -oE "^[^:]{1,}"))
 echo "This script will randomly change the password of all users on this system with login shells.
         Upon completion, you will be prompted to change your own password.
         Continue? [Y/N]"
@@ -17,7 +17,6 @@ get4() {
 
 dopass() {
     pass=''
-    #echo "$(get4)$(get4)$(get4)$(get4)" | sed "s/./&\n/g" | grep . | shuf | tr -d "\n"
     for (( i=0; i < ($RANDOM%3)+3; i++ )); do
         pass+=$(get4)
     done
@@ -25,7 +24,10 @@ dopass() {
 }
 
 for user in users; do
-    echo "$(dopass)" | passwd -s "${user}"
+    echo "$(dopass)" | sudo passwd -s "${user}"
 done
+printf "Change root password:\n"
+sudo passwd root
+
+printf "Change your password:\n"
 passwd $(id -un)
-dopass

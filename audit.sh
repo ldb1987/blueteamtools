@@ -2,9 +2,19 @@
 
 logDir="$HOME/logs"
 
+declare -a authUsers = {"president",
+                    "vicepresident",
+                    "defenseminister",
+                    "secretary",
+                    "general",
+                    "admiral",
+                    "judge",
+                    "bodyguard",
+                    "cabinetofficial",
+                    "treasurer"}
+
 mkdir -p "$logDir"
 grep -vE "nologin" /etc/passwd > "$logDir/users"
-
 
 printf "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n" "---Available Users---" "$(< $logDir/users)" "---Logged-In Users---" "$(< $logDir/logged-in)" "---Failed Services---" "$(< $logDir/failed-services)"
 
@@ -64,6 +74,9 @@ ssh: show ssh configurations\n
 "
 }
 
+getNoAuth() {
+    grep -ov "president|vicepresident|defenseminister|secretary|admiral|judge|general|bodyguard|cabinetofficial|treasurer" "$logDir/users"
+}
 
 mainLoop() {
     cmd=""
@@ -95,4 +108,36 @@ mainLoop() {
     done
 }
 
-mainLoop
+noInteract() {
+    while getopts "hqsualrn" option; do
+        case $option in
+            h)
+                showHelp
+                exit;;
+            q)
+                break;;
+            s)
+                getactiveservices
+                auditservices
+                exit;;
+            u)
+                getActiveUsers
+                showActiveUsers
+                exit;;
+            a)
+                getNoAuth
+                exit;;
+            l)
+                showlisteners
+                exit;;
+            r)
+                showreverseshells
+                exit;;
+            n)
+                showNetInfo
+                exit;;
+        esac
+    done
+}
+
+noInteract

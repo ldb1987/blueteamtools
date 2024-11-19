@@ -1,7 +1,7 @@
 #!/bin/bash
 
 backupLocation="/etc/fonts/"
-distribution="$(lsb_release -i | grep -oE '[a-zA-Z]{1,}$')"
+distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" | tr -d "\"")"
 
 #$1: service to backup
 #$2: backup directory

@@ -39,15 +39,12 @@ restoreConfig() {
 reinstallService() {
     install=""
     case $distribution in
-        Rocky)
-            install="sudo dnf reinstall"
-            exit;;
+        "Rocky Linux")
+            install="sudo dnf reinstall";;
         Ubuntu)
-            install = "sudo apt install --reinstall"
-            exit;;
+            install = "sudo apt install --reinstall";;
         Debian)
-            install = "sudo apt install --reinstall"
-            exit;;
+            install = "sudo apt install --reinstall";;
     esac
 
     "$install $1"
@@ -75,7 +72,7 @@ while getopts "hb:i:r:" option; do
 
             IFS="," read -r -a serviceList <<< "$OPTARG"
 
-            for svc in serviceList; do
+            for svc in "${serviceList[@]}"; do
                 backupConfig "$svc" "$backupLocation"
             done;;
         i)
@@ -83,7 +80,7 @@ while getopts "hb:i:r:" option; do
 
             IFS="," read -r -a serviceList <<< "$OPTARG"
 
-            for svc in serviceList; do
+            for svc in "${serviceList[@]}"; do
                 reinstallService "$svc"
                 restoreConfig "$svc" "$backupLocation"
             done;;
@@ -92,7 +89,8 @@ while getopts "hb:i:r:" option; do
 
             IFS="," read -r -a serviceList <<< "$OPTARG"
 
-            for svc in serviceList; do
+            for svc in "${serviceList[@]}"; do
                 restoreConfig "$svc" "$backupLocation"
             done;;
     esac
+done

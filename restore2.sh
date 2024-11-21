@@ -44,11 +44,11 @@ reinstallService() {
     install=""
     case $distribution in
         "Rocky Linux")
-            install="dnf reinstall";;
+            dnf reinstall -y "$1";;
         Ubuntu)
-            install="apt install --reinstall";;
+            apt install -y --reinstall "$1";;
         Debian)
-            install="apt install --reinstall";;
+            apt install -y --reinstall "$1";;
     esac
 
     sudo "$install $1"

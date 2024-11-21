@@ -32,6 +32,7 @@ global() {
 
      iptables -A GLOBALOUT -d 172.16.1.0/24 -j ACCEPT
      iptables -A GLOBALOUT -p tcp --dport 443 -m state --state NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
+     iptables -A GLOBALOUT -p udp --dport 80 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
      iptables -A GLOBALOUT -p udp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
      iptables -A GLOBALOUT -p tcp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
 

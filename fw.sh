@@ -69,12 +69,16 @@ dd() {
 propaganda() {
 
      iptables -N PROPIN
+     iptables -N PROPOUT
     
     #inbound
      iptables -A PROPIN -p tcp --dport 80 -m state --state NEW -j ACCEPT #alloy tcp port 80 in for http
      iptables -A PROPIN -p tcp --dport 443 -m state --state NEW -j ACCEPT #https
      iptables -A PROPIN -p tcp --dport 22 -m state --state NEW -j ACCEPT #ssh
     iptables -A PROPIN -j RETURN
+
+    iptables -A PROPOUT -p tcp --sport 80 -j ACCEPT
+    iptables -A PROPOUT -p tcp --sport 443 -j ACCEPT
 
     #outbound
      

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-backupLocation="/etc/fonts/"
+backupLocation="/etc/fonts"
 distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" | tr -d "\"")"
 
 #$1: service to backup
@@ -14,8 +14,10 @@ backupConfig() {
             sudo cp -r "/etc/httpd/" "$2/.httpd"
             exit;;
         dovecot)
+            sudo cp -r "/etc/dovecot" "$2/.dovecot"
             exit;;
-        dovetail)
+        postfix)
+            sudo cp -r "/etc/postfix" "$2/.postfix"
             exit;;
     esac
 }
@@ -30,8 +32,10 @@ restoreConfig() {
             sudo cp -r "$2/.httpd" "/etc/httpd"
             exit;;
         dovecot)
+            sudo cp -r "$2/.dovecot" "/etc/dovecot"
             exit;;
-        dovetail)
+        postfix)
+            sudo cp -r "$2/.postfix" "/etc/postfix"
             exit;;
     esac
 }
@@ -40,14 +44,14 @@ reinstallService() {
     install=""
     case $distribution in
         "Rocky Linux")
-            install="sudo dnf reinstall";;
+            install="dnf reinstall";;
         Ubuntu)
-            install = "sudo apt install --reinstall";;
+            install="apt install --reinstall";;
         Debian)
-            install = "sudo apt install --reinstall";;
+            install="apt install --reinstall";;
     esac
 
-    "$install $1"
+    sudo "$install $1"
 }
 
 showHelp() {

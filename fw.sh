@@ -2,115 +2,169 @@
 
 start() {
     #clear existing rules
-    sudo iptables -F
-    sudo iptables -t nat -F
-    sudo iptables -t mangle -F
+     iptables -F
+     iptables -t nat -F
+     iptables -t mangle -F
+
+     iptables -P INPUT DROP
+     iptables -P OUTPUT DROP
+     iptables -P FORWARD DROP
 
     #inbound
-    sudo iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #accept inbound traffic from established connections
-    sudo iptables -A INPUT -j LOG --log-prefix "FW_IN: " --log-level info #logging for bloked connections in
-    sudo iptables -A INPUT -j DROP #deny by default
+     iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #accept inbound traffic from established connections
+     iptables -A INPUT -i lo -m state --state NEW -j ACCEPT
+     iptables -A INPUT -j LOG --log-prefix "FW_IN: " --log-level info #logging for blocked connections in
 
     #outbound
-    sudo iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #allow outbound traffic from established connections
-    sudo iptables -A OUTPUT -j LOG --log-prefix "FW_OUT: " --log-level info #Logging for blocked connections out
-    sudo iptables -A OUTPUT -j DROP #deny by default
+     iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #allow outbound traffic from established connections
+     iptables -A OUTPUT -o lo -m state --state NEW -j ACCEPT
+     iptables -A OUTPUT -j LOG --log-prefix "FW_OUT: " --log-level info #Logging for blocked connections out
 
     global
     dd
 }
 
 global() {
-    sudo iptables -N GLOBALIN
-    sudo iptables -N GLOBALOUT
+     iptables -N GLOBALIN
+     iptables -N GLOBALOUT
 
-    sudo iptables -I INPUT 2 -j GLOBALIN
-    sudo iptables -I OUTPUT 2 -j GLOBALOUT
+     iptables -A GLOBALIN -s 172.16.1.0/24 -j ACCEPT
 
-    sudo iptables -A GLOBALIN -s 172.16.1.0/24 -j ACCEPT
+     iptables -A GLOBALOUT -d 172.16.1.0/24 -j ACCEPT
+     iptables -A GLOBALOUT -p tcp --dport 443 -m state --state NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
+     iptables -A GLOBALOUT -p udp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
+     iptables -A GLOBALOUT -p tcp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
 
-    sudo iptables -A GLOBALOUT -d 172.16.1.0/24 -j ACCEPT
-    sudo iptables -A GLOBALOUT -p tcp --dport 443 -m state --state NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
-    sudo iptables -A GLOBALOUT --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
+     iptables -A GLOBALIN -j RETURN
+     iptables -A GLOBALOUT -j RETURN
 
-    sudo iptables -A GLOBALIN -j RETURN
-    sudo iptables -A GLOBALOUT -j RETURN
+     iptables -I INPUT 3 -j GLOBALIN
+     iptables -I OUTPUT 3 -j GLOBALOUT
 }
 
 #Data Dog Chain
 dd() {
-    sudo iptables -N DDOGIN
-    sudo iptables -N DDOGOUT
-    sudo iptables -I INPUT 3 -j DDOGIN
-    sudo iptables -I OUTPUT 3 -j DDOGOUT
+     iptables -N DDOGIN
+     iptables -N DDOGOUT
+    
     
     declare -a ddog
 
     ddogstr=$(grep -oE "[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}/[0-9]{1,2}" <<< "$(curl https://ip-ranges.us5.datadoghq.com)")
 
     while read -r line; do
-        sudo iptables -A DDOGIN -s "$line" -j ACCEPT
-        sudo iptables -A DDOGOUT -s "$line" -j ACCEPT
+        iptables -A DDOGIN -s "$line" -j LOG --log-prefix "DDOG_IN: " --log-level info
+         iptables -A DDOGIN -s "$line" -j ACCEPT
+         iptables -A DDOGOUT -d "$line" -j LOG --log-prefix "DDOG_OUT: " --log-level info
+         iptables -A DDOGOUT -d "$line" -j ACCEPT
     done <<< $ddogstr
 
-    sudo iptables -A DDOGIN -j RETURN
-    sudo iptables -A DDOGOUT -j RETURN
+     iptables -A DDOGIN -j RETURN
+     iptables -A DDOGOUT -j RETURN
+
+     iptables -I INPUT 4 -j DDOGIN
+     iptables -I OUTPUT 4 -j DDOGOUT
 }
 
 propaganda() {
 
-    sudo iptables -N PROPIN
-    sudo iptables -I INPUT 4 -j PROPIN
-    #inbound
-    sudo iptables -A PROPIN -p tcp --dport 80 -m state --state NEW -j ACCEPT #alloy tcp port 80 in for http
-    sudo iptables -A PROPIN -p tcp --dport 443 -m state --state NEW -j ACCEPT #https
-    sudo iptables -A PROPIN -p tcp --dport 22 -m state --state NEW -j ACCEPT #ssh
+     iptables -N PROPIN
     
+    #inbound
+     iptables -A PROPIN -p tcp --dport 80 -m state --state NEW -j ACCEPT #alloy tcp port 80 in for http
+     iptables -A PROPIN -p tcp --dport 443 -m state --state NEW -j ACCEPT #https
+     iptables -A PROPIN -p tcp --dport 22 -m state --state NEW -j ACCEPT #ssh
+    iptables -A PROPIN -j RETURN
 
     #outbound
-    sudo iptables -A PROPIN -j RETURN
+     
+
+     iptables -I INPUT 5 -j PROPIN
 }
 
 wiretap() {
-    sudo iptables -N WIREIN
-    sudo iptables -N WIREOUT
-    sudo iptables -I INPUT 4 -j WIREIN
-    sudo iptables -I OUTPUT 4 -j WIREOUT
+     iptables -N WIREIN
+     iptables -N WIREOUT
+     
 
     for port in 143 993 25 2525 465 587; do
-        sudo iptables -A WIREIN 5 -p tcp --dport "$port" -m state --state NEW -j ACCEPT
+         iptables -A WIREIN -p tcp --dport "$port" -m state --state NEW -j ACCEPT
     done
 
     for port in 25 2525 465 587; do
-        sudo iptables -A WIREOUT 5 -p tcp --dport "$port" -m state --state NEW -j ACCEPT
+         iptables -A WIREOUT -p tcp --dport "$port" -m state --state NEW -j ACCEPT
     done
 
-    sudo iptables -A WIREIN -j RETURN
-    sudo iptables -A WIREOUT -j RETURN
+     iptables -A WIREIN -j RETURN
+     iptables -A WIREOUT -j RETURN
+
+     iptables -I INPUT 5 -j WIREIN
+     iptables -I OUTPUT 5 -j WIREOUT
 }
 
 vault() {
     iptables -N VAULTIN
-    sudo iptables -I INPUT 4 -j VAULTIN
+     
 
-    sudo iptables -A VAULTIN -p tcp --dport 20 -m state --state NEW -j ACCEPT
-    sudo iptables -A VAULTIN -p tcp --dport 21 -m state --state NEW -j ACCEPT
+     iptables -A VAULTIN -p tcp --dport 20 -m state --state NEW -j ACCEPT
+     iptables -A VAULTIN -p tcp --dport 21 -m state --state NEW -j ACCEPT
 
-    sudo iptables -A VAULTIN -j RETURN
+     iptables -A VAULTIN -j RETURN
+
+     iptables -I INPUT 5 -j VAULTIN
 }
 
 addon() {
+    if [[ -z "$1" ]]; then
+        exit
+    fi
     declare -a ports
     IFS="," read -r -a ports <<< "$1"
 
     for port in "${ports[@]}"; do
-        sudo iptables -A INPUT 5 -p tcp "--'$2'port" "$port" -m state --state NEW -j ACCEPT
+         iptables -A INPUT 6 -p tcp "--'$2'port" "$port" -m state --state NEW -j ACCEPT
     done
 }
 
-start
+#$1 input chain name
+#$2 comma-separated ports or ip addresses
+#$3 optional- output chain name
+customInput() {
+     iptables -N "$1"
+    declare -a src
 
-while getopts "hpwva:" option; do
+    IFS="," read -r -a src <<< "$2"
+}
+
+reset() {
+    iptables -F
+    iptables -X GLOBALIN 2>/dev/null
+    iptables -X GLOBALOUT 2>/dev/null
+    iptables -X DDOGIN 2>/dev/null
+    iptables -X DDOGOUT 2>/dev/null
+    iptables -P INPUT ACCEPT
+    iptables -P OUTPUT ACCEPT
+    iptables -P FORWARD ACCEPT
+}
+
+if [ ! "$(id -u)" == "0" ]; then
+    echo "This script must be run as root"
+    exit
+fi
+
+echo "$1"
+
+reset
+
+if [[ ! "$1" == "-r" ]]; then
+start
+fi
+
+if [[ -z "$1" ]]; then
+exit
+fi
+
+while getopts "hrpwva:" option; do
     case $option in
         h)
             help
@@ -131,6 +185,8 @@ while getopts "hpwva:" option; do
             exit;;
         s)
             addon "$ports" s
+            exit;;
+        r)
             exit;;
         
     esac

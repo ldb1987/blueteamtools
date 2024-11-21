@@ -12,12 +12,12 @@ start() {
 
     #inbound
      iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #accept inbound traffic from established connections
-     iptables -A INPUT -i lo -m state --state NEW -j ACCEPT
+     iptables -A INPUT -i lo -j ACCEPT
      iptables -A INPUT -j LOG --log-prefix "FW_IN: " --log-level info #logging for blocked connections in
 
     #outbound
      iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #allow outbound traffic from established connections
-     iptables -A OUTPUT -o lo -m state --state NEW -j ACCEPT
+     iptables -A OUTPUT -o lo -j ACCEPT
      iptables -A OUTPUT -j LOG --log-prefix "FW_OUT: " --log-level info #Logging for blocked connections out
 
     global

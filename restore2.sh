@@ -8,17 +8,13 @@ distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" |
 backupConfig() {
     case $1 in
         openssh-server)
-            sudo cp -r "/etc/ssh" "$2/.ssh"
-            exit;;
+            sudo cp -r "/etc/ssh" "$2/.ssh";;
         httpd)
-            sudo cp -r "/etc/httpd/" "$2/.httpd"
-            exit;;
+            sudo cp -r "/etc/httpd/" "$2/.httpd";;
         dovecot)
-            sudo cp -r "/etc/dovecot" "$2/.dovecot"
-            exit;;
+            sudo cp -r "/etc/dovecot" "$2/.dovecot";;
         postfix)
-            sudo cp -r "/etc/postfix" "$2/.postfix"
-            exit;;
+            sudo cp -r "/etc/postfix" "$2/.postfix";;
     esac
 }
 #$1: service to backup
@@ -26,17 +22,13 @@ backupConfig() {
 restoreConfig() {
     case $1 in
         openssh-server)
-            sudo cp -r "$2/.ssh" "/etc/ssh"
-            exit;;
+            sudo cp -r "$2/.ssh" "/etc/ssh";;
         httpd)
-            sudo cp -r "$2/.httpd" "/etc/httpd"
-            exit;;
+            sudo cp -r "$2/.httpd" "/etc/httpd";;
         dovecot)
-            sudo cp -r "$2/.dovecot" "/etc/dovecot"
-            exit;;
+            sudo cp -r "$2/.dovecot" "/etc/dovecot";;
         postfix)
-            sudo cp -r "$2/.postfix" "/etc/postfix"
-            exit;;
+            sudo cp -r "$2/.postfix" "/etc/postfix";;
     esac
 }
 #$1: service
@@ -44,7 +36,7 @@ reinstallService() {
     install=""
     case $distribution in
         "Rocky Linux")
-            dnf reinstall -y "$1";;
+            dnf reinstall -y "${1[@]}";;
         Ubuntu)
             apt install -y --reinstall "$1";;
         Debian)
@@ -83,9 +75,15 @@ while getopts "hb:i:r:" option; do
             declare -a serviceList
 
             IFS="," read -r -a serviceList <<< "$OPTARG"
-
+            case $distribution in
+                "Rocky Linux")
+                    dnf reinstall -y "${serviceList[@]}";;
+                Ubuntu)
+                    apt install -y --reinstall "${serviceList[@]}";;
+                Debian)
+                    apt install -y --reinstall "${serviceList[@]}";;
+            esac
             for svc in "${serviceList[@]}"; do
-                reinstallService "$svc"
                 restoreConfig "$svc" "$backupLocation"
             done;;
         r)

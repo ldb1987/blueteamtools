@@ -3,18 +3,22 @@
 backupLocation="/etc/fonts"
 distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" | tr -d "\"")"
 
+mkdir -p $backupLocation
+
 #$1: service to backup
 #$2: backup directory
 backupConfig() {
     case $1 in
         openssh-server)
-            sudo cp -r "/etc/ssh" "$2/.ssh";;
+            sudo cp -r "/etc/ssh" "$2";;
         httpd)
-            sudo cp -r "/etc/httpd/" "$2/.httpd";;
+            sudo cp -r "/etc/httpd/" "$2";;
         dovecot)
-            sudo cp -r "/etc/dovecot" "$2/.dovecot";;
+            sudo cp -r "/etc/dovecot" "$2";;
         postfix)
-            sudo cp -r "/etc/postfix" "$2/.postfix";;
+            sudo cp -r "/etc/postfix" "$2";;
+        vsftpd)
+            sudo cp -r "/etc/vsftpd.conf" "$2";;
     esac
 }
 #$1: service to backup
@@ -22,13 +26,15 @@ backupConfig() {
 restoreConfig() {
     case $1 in
         openssh-server)
-            sudo cp -r "$2/.ssh" "/etc/ssh";;
+            sudo cp -r "$2/ssh" "/etc";;
         httpd)
-            sudo cp -r "$2/.httpd" "/etc/httpd";;
+            sudo cp -r "$2/httpd" "/etc";;
         dovecot)
-            sudo cp -r "$2/.dovecot" "/etc/dovecot";;
+            sudo cp -r "$2/dovecot" "/etc";;
         postfix)
-            sudo cp -r "$2/.postfix" "/etc/postfix";;
+            sudo cp -r "$2/postfix" "/etc";;
+        vsftpd)
+            sudo cp -r "$2/vsftpd.conf" "/etc";;
     esac
 }
 #$1: service
@@ -83,6 +89,7 @@ while getopts "hb:i:r:" option; do
                 Debian)
                     apt install -y --reinstall "${serviceList[@]}";;
             esac
+
             for svc in "${serviceList[@]}"; do
                 restoreConfig "$svc" "$backupLocation"
             done;;

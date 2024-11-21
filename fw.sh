@@ -138,10 +138,14 @@ customInput() {
 
 reset() {
     iptables -F
-    iptables -X GLOBALIN 2>/dev/null
-    iptables -X GLOBALOUT 2>/dev/null
-    iptables -X DDOGIN 2>/dev/null
-    iptables -X DDOGOUT 2>/dev/null
+
+    iptables -t nat -F
+    iptables -t mangle -F
+
+    for chain in GLOBALIN GLOBALOUT DDOGIN DDOGOUT PROPIN WIREIN WIREOUT VAULTIN VAULTOUT; do
+        iptables -X "$chain" 2>/dev/null
+    done
+    
     iptables -P INPUT ACCEPT
     iptables -P OUTPUT ACCEPT
     iptables -P FORWARD ACCEPT

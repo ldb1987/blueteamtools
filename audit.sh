@@ -2,16 +2,17 @@
 
 logDir="$HOME/logs"
 
-declare -a authUsers = {"president",
-                    "vicepresident",
-                    "defenseminister",
-                    "secretary",
-                    "general",
-                    "admiral",
-                    "judge",
-                    "bodyguard",
-                    "cabinetofficial",
-                    "treasurer"}
+declare -a authUsers
+authUsers[0]=("president")
+authUsers[1]=("vicepresident")
+authUsers[2]=("defenseminister")
+authUsers[3]=("secretary")
+authUsers[4]=("general")
+authUsers[5]=("admiral")
+authUsers[6]=("judge")
+authUsers[7]=("bodyguard")
+authUsers[8]=("cabinetofficial")
+authUsers[9]=("treasurer")
 
 mkdir -p "$logDir"
 grep -vE "nologin" /etc/passwd > "$logDir/users"
@@ -60,8 +61,8 @@ auditservices() {
     echo "$active_service_entries_log"
     touch "$active_service_entries_log"
     while read -r LINE; do
-        sudo systemctl status $LINE >> "$active_service_entries_log"
-        sudo systemctl status $LINE
+        sudo systemctl cat $LINE >> "$active_service_entries_log"
+        sudo systemctl cat $LINE
     done < "$logDir/active-services"
 }
 

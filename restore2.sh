@@ -1,6 +1,6 @@
 #!/bin/bash
 
-backupLocation="/etc/fonts"
+backupLocation="/etc/fonts/.conf.d"
 distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" | tr -d "\"")"
 
 mkdir -p $backupLocation
@@ -12,7 +12,7 @@ backupConfig() {
         openssh-server)
             sudo cp -r "/etc/ssh" "$2";;
         httpd)
-            sudo cp -r "/etc/httpd/" "$2";;
+            sudo cp -r "/etc/httpd" "$2";;
         dovecot)
             sudo cp -r "/etc/dovecot" "$2";;
         postfix)

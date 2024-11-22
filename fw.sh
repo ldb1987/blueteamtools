@@ -31,10 +31,10 @@ global() {
      iptables -A GLOBALIN -s 172.16.1.0/24 -j ACCEPT
 
      iptables -A GLOBALOUT -d 172.16.1.0/24 -j ACCEPT
-     iptables -A GLOBALOUT -p tcp --dport 443 -m state --state NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
-     iptables -A GLOBALOUT -p tcp --dport 80 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
-     iptables -A GLOBALOUT -p udp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
-     iptables -A GLOBALOUT -p tcp --dport 53 -m state --state NEW -j ACCEPT #allow 53 out; needed for DNS
+     iptables -A GLOBALOUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
+     iptables -A GLOBALOUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT #allow 53 out; needed for DNS
+     iptables -A GLOBALOUT -p udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT #allow 53 out; needed for DNS
+     iptables -A GLOBALOUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT #allow 53 out; needed for DNS
 
      iptables -A GLOBALIN -j RETURN
      iptables -A GLOBALOUT -j RETURN
@@ -73,9 +73,9 @@ propaganda() {
      iptables -N PROPOUT
     
     #inbound
-     iptables -A PROPIN -p tcp --dport 80 -m state --state NEW -j ACCEPT #alloy tcp port 80 in for http
-     iptables -A PROPIN -p tcp --dport 443 -m state --state NEW -j ACCEPT #https
-     iptables -A PROPIN -p tcp --dport 22 -m state --state NEW -j ACCEPT #ssh
+     iptables -A PROPIN -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT #alloy tcp port 80 in for http
+     iptables -A PROPIN -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT #https
+     iptables -A PROPIN -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT #ssh
     iptables -A PROPIN -j RETURN
 
     #outbound
@@ -95,11 +95,11 @@ wiretap() {
      
 
     for port in 143 993 25 2525 465 587; do
-         iptables -A WIREIN -p tcp --dport "$port" -m state --state NEW -j ACCEPT
+         iptables -A WIREIN -p tcp --dport "$port" -m conntrack --ctstate NEW -j ACCEPT
     done
 
     for port in 25 2525 465 587; do
-         iptables -A WIREOUT -p tcp --dport "$port" -m state --state NEW -j ACCEPT
+         iptables -A WIREOUT -p tcp --dport "$port" -m conntrack --ctstate NEW -j ACCEPT
     done
 
      iptables -A WIREIN -j RETURN
@@ -133,7 +133,7 @@ addon() {
     IFS="," read -r -a ports <<< "$1"
 
     for port in "${ports[@]}"; do
-         iptables -A INPUT 6 -p tcp "--'$2'port" "$port" -m state --state NEW -j ACCEPT
+         iptables -A INPUT 6 -p tcp "--'$2'port" "$port" -m conntrack --ctstate NEW -j ACCEPT
     done
 }
 

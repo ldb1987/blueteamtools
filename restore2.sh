@@ -60,6 +60,11 @@ showHelp() {
     echo "-r [service list] [path] restore configs for services in a comma-separated list. Backup path is optional"
 }
 
+if [ ! "$(id -u)" == "0" ]; then
+    echo "This script must be run as root"
+    exit
+fi
+
 if [[ -n "$3" ]]; then 
     backupLocation="$3"
 fi

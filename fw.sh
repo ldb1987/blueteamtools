@@ -11,12 +11,12 @@ start() {
      iptables -P FORWARD DROP
 
     #inbound
-     iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #accept inbound traffic from established connections
+     iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT #accept inbound traffic from established connections
      iptables -A INPUT -i lo -j ACCEPT
      iptables -A INPUT -j LOG --log-prefix "FW_IN: " --log-level info #logging for blocked connections in
 
     #outbound
-     iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT #allow outbound traffic from established connections
+     iptables -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT #allow outbound traffic from established connections
      iptables -A OUTPUT -o lo -j ACCEPT
      iptables -A OUTPUT -j LOG --log-prefix "FW_OUT: " --log-level info #Logging for blocked connections out
 
@@ -111,14 +111,18 @@ wiretap() {
 
 vault() {
     iptables -N VAULTIN
+    iptables -N VAULTOUT
      
+     iptables -A VAULTIN -p tcp --dport 21 -m conntrack --ctstate NEW -j ACCEPT
 
-     iptables -A VAULTIN -p tcp --dport 20 -m state --state NEW -j ACCEPT
-     iptables -A VAULTIN -p tcp --dport 21 -m state --state NEW -j ACCEPT
+    iptables -A VAULTOUT -p tcp --sport 20 -m conntrack --ctstate NEW -j ACCEPT
 
      iptables -A VAULTIN -j RETURN
+     iptables -A VAULTOUT -j RETURN
+
 
      iptables -I INPUT 5 -j VAULTIN
+     iptables -I OUTPUT 5 -j VAULTOUT
 }
 
 addon() {

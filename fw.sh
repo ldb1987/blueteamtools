@@ -199,7 +199,7 @@ while getopts "hrpwva:" option; do
             addon "$ports" d
             exit;;
         s)
-            addon "$ports" s
+            /sbin/iptables-save > /etc/iptables/rules.v4
             exit;;
         r)
             exit;;

@@ -169,6 +169,11 @@ fi
 
 echo "$1"
 
+if [[ "$1" == "-s" ]]; then
+    /sbin/iptables-save > /etc/iptables/rules.v4
+    exit
+fi
+
 reset
 
 if [[ ! "$1" == "-r" ]]; then
@@ -197,9 +202,6 @@ while getopts "hrpwva:" option; do
             ports=$OPTARG;;
         d)
             addon "$ports" d
-            exit;;
-        s)
-            /sbin/iptables-save > /etc/iptables/rules.v4
             exit;;
         r)
             exit;;

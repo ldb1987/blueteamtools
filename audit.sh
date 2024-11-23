@@ -3,21 +3,21 @@
 logDir="$HOME/logs"
 
 declare -a authUsers
-authUsers[0]=("president")
-authUsers[1]=("vicepresident")
-authUsers[2]=("defenseminister")
-authUsers[3]=("secretary")
-authUsers[4]=("general")
-authUsers[5]=("admiral")
-authUsers[6]=("judge")
-authUsers[7]=("bodyguard")
-authUsers[8]=("cabinetofficial")
-authUsers[9]=("treasurer")
+authUsers+=("president")
+authUsers+=("vicepresident")
+authUsers+=("defenseminister")
+authUsers+=("secretary")
+authUsers+=("general")
+authUsers+=("admiral")
+authUsers+=("judge")
+authUsers+=("bodyguard")
+authUsers+=("cabinetofficial")
+authUsers+=("treasurer")
 
 mkdir -p "$logDir"
 grep -vE "nologin" /etc/passwd > "$logDir/users"
 
-printf "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n" "---Available Users---" "$(< $logDir/users)" "---Logged-In Users---" "$(< $logDir/logged-in)" "---Failed Services---" "$(< $logDir/failed-services)"
+#printf "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n" "---Available Users---" "$(< $logDir/users)" "---Logged-In Users---" "$(< $logDir/logged-in)" "---Failed Services---" "$(< $logDir/failed-services)"
 
 getactiveservices() {
     systemctl list-units --state=active | sed "s/^  //g" | grep -oE '^[^ ]{1,}' | tee $logDir/active-services
@@ -32,7 +32,7 @@ showreverseshells() {
 }
 
 showlisteners() {
-    sudo ss -lnp
+    sudo ss -lnp | sed "s/  / /g"
 }
 
 getActiveUsers() {
@@ -67,7 +67,7 @@ auditservices() {
 }
 
 showHelp() {
-    printf "?: help
+    printf "h: help
 services: audit services
 active-users: show logged in users
 quit: quit
@@ -76,7 +76,7 @@ ssh: show ssh configurations\n
 }
 
 getNoAuth() {
-    grep -ov "president|vicepresident|defenseminister|secretary|admiral|judge|general|bodyguard|cabinetofficial|treasurer" "$logDir/users"
+    grep -ovE "president|vicepresident|defenseminister|secretary|admiral|judge|general|bodyguard|cabinetofficial|treasurer" "$logDir/users"
 }
 
 mainLoop() {
@@ -109,8 +109,7 @@ mainLoop() {
     done
 }
 
-noInteract() {
-    while getopts "hqsualrn" option; do
+while getopts "hqsualrn" option; do
         case $option in
             h)
                 showHelp
@@ -139,6 +138,3 @@ noInteract() {
                 exit;;
         esac
     done
-}
-
-noInteract

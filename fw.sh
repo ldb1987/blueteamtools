@@ -181,9 +181,6 @@ if [[ "$1" == "-s" ]]; then
             /sbin/iptables-save > /etc/iptables/rules.v4
             exit;;
     esac
-
-    /sbin/iptables-save > /etc/iptables/rules.v4
-    exit
 fi
 
 reset

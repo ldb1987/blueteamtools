@@ -113,7 +113,7 @@ mainLoop() {
     done
 }
 
-while getopts "hqsualrn" option; do
+while getopts "hqsualrnp" option; do
         case $option in
             h)
                 showHelp

@@ -167,9 +167,21 @@ if [ ! "$(id -u)" == "0" ]; then
     exit
 fi
 
-echo "$1"
+distribution="$(grep -E "^NAME" /etc/os-release | grep -oE "\"[A-Za-z ]{1,}\"" | tr -d "\"")"
 
 if [[ "$1" == "-s" ]]; then
+    case $distribution in
+        "Rocky Linux")
+            /sbin/iptables-save > /etc/sysconfig/iptables
+            exit;;
+        Ubuntu)
+            /sbin/iptables-save > /etc/iptables/rules.v4
+            exit;;
+        Debian)
+            /sbin/iptables-save > /etc/iptables/rules.v4
+            exit;;
+    esac
+
     /sbin/iptables-save > /etc/iptables/rules.v4
     exit
 fi

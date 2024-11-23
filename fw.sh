@@ -30,7 +30,7 @@ global() {
 
      iptables -A GLOBALIN -s 172.16.1.0/24 -j ACCEPT
      iptables -A GLOBALIN -s irsec.club -j ACCEPT
-     iptables -A GLOBALIN -s ritsec.club -j ACCEPT
+     iptables -A GLOBALIN -s stack.ritsec.cloud -j ACCEPT
 
      iptables -A GLOBALOUT -d 172.16.1.0/24 -j ACCEPT
      iptables -A GLOBALOUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT #allow 443 (for https) traffic out; needed for package managers
@@ -38,7 +38,7 @@ global() {
      iptables -A GLOBALOUT -p udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT #allow 53 out; needed for DNS
      iptables -A GLOBALOUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT #allow 53 out; needed for DNS
      iptables -A GLOBALOUT -d irsec.club -j ACCEPT
-     iptables -A GLOBALOUT -d ritsec.club -j ACCEPT
+     iptables -A GLOBALOUT -d stack.ritsec.cloud -j ACCEPT
 
      iptables -A GLOBALIN -j RETURN
      iptables -A GLOBALOUT -j RETURN

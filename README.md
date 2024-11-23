@@ -6,6 +6,10 @@ These scripts are not good please don't use them.
 
     Script for creating deny-by-default firewall rules. Has a global set of rules allowing outbound traffic to ports 80, 443, and 53 to allow DNS, package managers, and internet access; all forwarding is blocked by default.
 
+    Requires iptables to be installed, and firewalld disabled on redhat-based distributions.
+
+    For saving rules, /etc/iptables/rules.v4 must exist on debian-based distributions, and /etc/sysconfig/iptables must exist on redhat-based distributions
+
     Options exist for more specific rules on top of those:
         -h: show help
         -p: Allows traffic for webservers by allowing new connections inbound to ports 80 and 443

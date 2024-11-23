@@ -79,6 +79,10 @@ getNoAuth() {
     grep -ovE "president|vicepresident|defenseminister|secretary|admiral|judge|general|bodyguard|cabinetofficial|treasurer" "$logDir/users"
 }
 
+getUsers() {
+    cat "$logDir/users"
+}
+
 mainLoop() {
     cmd=""
     while read -p "Enter command to run or '?' for help\$ " cmd; do
@@ -135,6 +139,9 @@ while getopts "hqsualrn" option; do
                 exit;;
             n)
                 showNetInfo
+                exit;;
+            p)
+                getUsers
                 exit;;
         esac
     done

@@ -12,3 +12,5 @@ for user in president vicepresident defenseminister secretary general admiral ju
         echo "$user : $pass"
     fi
 done
+
+while getopts "ah"

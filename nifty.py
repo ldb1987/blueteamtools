@@ -42,14 +42,5 @@ def main():
         print(json.dumps(tables))
         nft.json_cmd(tables)
 
-    #table = init_table()
-
-    #write_rules(tables, table)
-
-    #write_rules(rules, table)
-
-
-
-
 if __name__=="__main__":
     main()
